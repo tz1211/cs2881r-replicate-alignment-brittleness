@@ -32,36 +32,29 @@ print("# of gpus: ", torch.cuda.device_count())
 SAVE_PATH = "temp"
 
 modeltype2path = {
-    "llama2-7b-chat-hf": "",
-    "llama2-13b-chat-hf": "",
-    "llama2-7b-hf": "",
-    "llama2-13b-hf": "",
+    "llama3.2-1b-instruct": "models/meta-llama/Llama-3.2-1B-Instruct",
 }
 
 
 def get_llm(model_name, cache_dir="llm_weights"):
-    if model_name in [
-        "llama2-7b-chat-hf",
-        "llama2-13b-chat-hf",
-        "llama2-7b-hf",
-        "llama2-13b-hf",
-    ]:
+    if model_name in modeltype2path.keys():
         model = AutoModelForCausalLM.from_pretrained(
             modeltype2path[model_name],
-            torch_dtype=torch.bfloat16,
+            dtype=torch.bfloat16,
             cache_dir=cache_dir,
             low_cpu_mem_usage=True,
             device_map="auto",
         )
+    else:
+        raise ValueError(f"Model {model_name} not supported")
 
     model.seqlen = model.config.max_position_embeddings
     return model
 
-
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="llama2-7b-chat-hf")
-    parser.add_argument("--model_base", type=str, default="llama2-7b-hf")
+    parser.add_argument("--model", type=str, default="llama3.2-1b-instruct")
+    parser.add_argument("--model_base", type=str, default="llama3.2-1b-instruct")
     parser.add_argument(
         "--seed", type=int, default=0, help="Seed for sampling the calibration data."
     )
