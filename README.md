@@ -4,18 +4,34 @@ This repository provides an original implementation of [*Assessing the Brittlene
 
 ## 1. Setup
 
-You can use the following instruction to create conda environment
+You can use the following instruction to create the python environment
 ```bash
-conda env create -f environment.yml
+uv venv --python 3.9.18 cs2881
+source cs2881/bin/activate
+uv pip install -r requirements.txt 
 ```
-Please notice that you need to specify your environment path inside ``environment.yml``
 
 Besides, you need to manually install a hacked version of lm_eval to support evaluating the pruned model. See [wanda](https://github.com/locuslab/wanda?tab=readme-ov-file#zero-shot-evaluation).
 
-There are known [issues](https://github.com/huggingface/transformers/issues/22222) with the transformers library on loading the LLaMA tokenizer correctly. Please follow the mentioned suggestions to resolve this issue.
+This is written by the original authors but is probably fixed in the transformers library already: 
+>There are known [issues](https://github.com/huggingface/transformers/issues/22222) with the transformers library on loading the LLaMA tokenizer correctly. Please follow the mentioned suggestions to resolve this issue.
 
 
 Before running experiments, make sure you have specified the path pointing to the model stored in your locations.
+
+To download the models, first log in to huggingface and enter your HF token using (make sure you have access to the llama model on HF): 
+```bash 
+huggingface-cli login
+```
+
+Then run: 
+```bash 
+uv run python download_hf_models.py
+```
+
+Optionally, you can configure the following parameters: 
+- `--model_name`: Huggingface model repo id (default="meta-llama/Llama-3.2-1B-Instruct")
+- `--local_dir`: local directory to download the model to (default="models/meta-llama/Llama-3.2-1B-Instruct")
 
 ## 2. Neuron Level Usage
 
@@ -30,18 +46,18 @@ Important parameters are:
 4. ``--eval_zero_shot``: Whether to evaluate the model's zero-shot-accuracy after pruning
 5. ``--eval_attack`` : Whether to evaluate the model's ASR after pruning.
 6. ``--save``: Specify the save location
-7. ``--model``: Specify the model. Currently we only support ``llama2-7b-chat-hf`` and ``llama2-13b-chat-hf``
+7. ``--model``: Specify the model. Currently we only support ``llama3.2-1b-instruct``
 
 
-Example: Using ``llama2-7b-chat-hf`` to prune 0.5 part of weights, using safety-full dataset.
+Example: Using ``llama3.2-1b-instruct`` to prune 0.5 part of weights, using safety-full dataset.
 ```bash
-model="llama2-7b-chat-hf"
+model="llama3.2-1b-instruct"
 method="wanda"
 type="unstructured"
 suffix="weightonly"
 save_dir="out/$model/$type/${method}_${suffix}/align/"
 
-python main.py \
+uv run python main.py \
     --model $model \
     --prune_method $method \
     --prune_data align \
